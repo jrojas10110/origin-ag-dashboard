@@ -48,7 +48,14 @@ async function loadFromDB() {
 }
 
 // Ejecutar al cargar la página
-window.addEventListener('load', () => setTimeout(loadFromDB, 800));
+function esperarDashboard() {
+  if (window.D && window.D.sv) {
+    loadFromDB();
+  } else {
+    setTimeout(esperarDashboard, 300);
+  }
+}
+window.addEventListener('load', () => setTimeout(esperarDashboard, 500));
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
