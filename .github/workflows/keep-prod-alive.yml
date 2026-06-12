@@ -1,0 +1,19 @@
+name: keep-prod-alive
+# Ping semanal de SOLO LECTURA a la DB de prod (evita la pausa por inactividad).
+# No escribe nada · no usa service_role · RLS protege la respuesta.
+on:
+  schedule:
+    - cron: "0 12 * * 1"   # lunes ~06:00 Costa Rica
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping read-only a prod
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://cxssesechiugplplpyve.supabase.co/rest/v1/tenants?select=id&limit=1" \
+            -H "apikey: ${{ secrets.PROD_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.PROD_ANON_KEY }}")
+          echo "Supabase respondió HTTP $status (cualquier respuesta cuenta como actividad)."
+          if [ -z "$status" ]; then echo "Sin respuesta"; exit 1; fi
